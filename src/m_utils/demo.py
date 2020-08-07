@@ -3,6 +3,12 @@ import os.path as osp
 import pickle
 import sys
 import time
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FFMpegWriter
+
+
 
 project_root = os.path.abspath ( os.path.join ( os.path.dirname ( __file__ ), '..', '..' ) )
 if __name__ == '__main__':
@@ -20,10 +26,58 @@ from src.m_utils.base_dataset import BaseDataset, PreprocessedDataset
 from src.models.estimate3d import MultiEstimator
 from src.m_utils.evaluate import numpify
 from src.m_utils.mem_dataset import MemDataset
+from src.m_utils.visualize import plotPaper3d,plotPaper3dour, visualize, plotPaper3dold
+from src.tools.getkey import get_key
+
+def laplace_function(x, lambda_):
+    return (1/(2*lambda_)) * np.e**(-1*(np.abs(x)/lambda_))
+lam = 3
+wei1 = laplace_function(-2,lam)
+wei2 = laplace_function(-1,lam)
+wei3 = laplace_function(0,lam)
+wei_sum = wei1 + wei2 +wei3
+weight1 = wei1/wei_sum
+weight2 = wei2/wei_sum
+weight3 = wei3/wei_sum
+
+def tracking(posecur, pose, personid, img_id):
+
+    posecurrent = posecur.copy()
+    posepre = pose.copy()
+
+    for i in range(len(posepre)):
+        if len(posecurrent) == 0:
+            break
+        dist_ave = []
+        for j in range(len(posecurrent)):
+            dist = np.square(posecurrent[j] - posepre[i])
+            dist = np.sqrt(dist[0] + dist[1] + dist[2])
+            dist_ave.append(np.sum(dist) / 17)
+
+        print(dist_ave)
+        dist_min = np.min( np.array(dist_ave) )
+        cur_id = dist_ave.index(dist_min)
+
+        a = get_key(personid, posepre[i][0][0])
+        tmp = personid[a]
+        tmp.append(posecurrent[cur_id][0][0])
+        personid[a] = tmp
+        posecurrent.pop(cur_id)
+
+    if len(posecurrent) != 0:
+        for m in range(len(posecurrent)):
+            personid[len(personid.keys())+m] = [posecurrent[m][0][0]]
+
+    return personid
 
 
 def export(model, loader, is_info_dicts=False, show=False):
     pose_list = list ()
+    personid = dict()
+    nums = 0
+    count = 0
+    change_frame = 0
+
     for img_id, imgs in enumerate ( tqdm ( loader ) ):
         try:
             pass
@@ -37,13 +91,92 @@ def export(model, loader, is_info_dicts=False, show=False):
                                          template_name='Unified' )
             poses3d = model._estimate3d ( 0, show=show )
         else:
-            this_imgs = list ()
+            this_imgs = list()
             for img_batch in imgs:
                 this_imgs.append ( img_batch.squeeze ().numpy () )
+                # print(this_imgs[0])
             poses3d = model.predict ( imgs=this_imgs, camera_parameter=camera_parameter, template_name='Unified',
                                           show=show, plt_id=img_id )
-
+        # print(imgs[0])
+        # print("pose")
+        # print(poses3d)
         pose_list.append ( poses3d )
+
+        # laplace function
+        # if len(pose_list) >= 3:
+        #     res1 = [i * weight3 for i in pose_list[-1]]
+        #     # print("res1")
+        #     # print(res1)
+        #     res_1 = [i * weight2 for i in pose_list[-2]]
+        #     # print("res_1")
+        #     # print(res_1)
+        #     res_2 = [i * weight1 for i in pose_list[-3]]
+        #     # print("res_2")
+        #     # print(res_2)
+        #     n = len(res1)
+        #     # print(n)
+        #     pose_new = []
+        #     for i in range(n):
+        #         pose_new.append(res1[i] + res_1[i] + res_2[i])
+        #     # print("new")
+        #     # print(pose_new)
+        #     # print("1")
+        #     poses3d = pose_new
+
+
+
+        nums = max(nums, len(poses3d))
+
+#track
+        if img_id == 0 :
+            personid = { i:[poses3d[i][0][0]] for i in range(len(poses3d)) }
+        else:
+
+            if len(pose_list[img_id - 1]) == len(poses3d):
+                tracking(poses3d,pose_list[img_id - 1], personid, img_id)
+            elif len(pose_list[img_id - 1]) > len(poses3d):
+                count += 1
+                change_frame = img_id - count
+                tracking(poses3d, pose_list[img_id - 2], personid, img_id)
+            else:
+                tracking(poses3d, pose_list[change_frame], personid, img_id)
+                count = 0
+        print(personid)
+        # print(poses3d)
+#visualization
+        fig_3d = plotPaper3d(poses3d, personid)
+
+        # fig_3d = plotPaper3dold(poses3d)
+
+        for n, cam in enumerate (model.dataset.cam_names):
+            img = model.dataset.info_dict[cam]['image_data']
+            img_init = visualize(img, return_img=True)
+            # print(img_init)
+            fig_3d.add_subplot(len(imgs), 2, 2 * cam + 1)
+            plt.imshow(img_init)
+            plt.xlabel(f'{cam}/{len(imgs)}')
+            plt.xticks([])
+            plt.yticks([])
+
+        fig_3d.show()
+        k = "%03d" % img_id
+        fig_3d.savefig(f'/home/xfy/mvpose/3d/{k}.png')
+# video
+    path = '/home/xfy/mvpose/3d/'
+    img_names = os.listdir(path)
+    fps = 10
+    size = (1280, 960)
+    fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+    video = cv2.VideoWriter('/home/xfy/mvpose/test.avi', fourcc, fps, size)
+    img_names.sort()
+
+    for i in range(0, len(img_names)):
+        print(img_names[i])
+        img_path = os.path.join(path, img_names[i])
+        img = cv2.imread(img_path)
+        video.write(img)
+    video.release()
+
     return pose_list
 
 
@@ -62,13 +195,13 @@ if __name__ == '__main__':
         if dataset_name == 'Shelf':
             dataset_path = model_cfg.shelf_path
             # you can change the test_rang to visualize different images (0~3199)
-            test_range = range ( 605, 1800, 5)
+            test_range = range ( 0, 50, 1)
             gt_path = dataset_path
 
         elif dataset_name == 'Campus':
             dataset_path = model_cfg.campus_path
             # you can change the test_rang to visualize different images (0~1999)
-            test_range = [i for i in range ( 605, 1000, 5 )]
+            test_range = [i for i in range ( 0, 50, 1 )]
             gt_path = dataset_path
 
         else:
@@ -90,9 +223,14 @@ if __name__ == '__main__':
 
         test_loader = DataLoader ( test_dataset, batch_size=1, pin_memory=True, num_workers=6, shuffle=False )
         pose_in_range = export ( test_model, test_loader, is_info_dicts=bool ( args.dumped_dir ), show=True )
+
+
+
         with open ( osp.join ( model_cfg.root_dir, 'result',
                                time.strftime ( str ( model_cfg.testing_on ) + "_%Y_%m_%d_%H_%M",
                                                time.localtime ( time.time () ) ) + '.pkl' ), 'wb' ) as f:
             pickle.dump ( pose_in_range, f )
+
+
 
 

@@ -8,6 +8,9 @@ import numpy as np
 import cv2
 import os.path as osp
 
+from src.tools.getkey import get_key
+
+
 
 def drawlines(img0, img1, lines, pts0, pts1):
     """
@@ -341,7 +344,8 @@ def show_panel_mem(dataset, matched_list, info_list, sub_imgid2cam, img_id, affi
     except AttributeError:
         show_panel_mem.counter = 0
     cols = len ( matched_list ) + 1
-    rows = sub_imgid2cam.max () + 2
+    # rows = sub_imgid2cam.max () + 2
+    rows = sub_imgid2cam.max() + 1
     Ps = dataset.P
     reprojectedPoses = list ()
     for camId, P in enumerate ( Ps ):
@@ -383,15 +387,20 @@ def show_panel_mem(dataset, matched_list, info_list, sub_imgid2cam, img_id, affi
             plt.xlabel ( f"#{sub_imageid}" )
             plt.xticks ( [] )
             plt.yticks ( [] )
-    ax = plt.subplot ( rows, cols, (rows - 1) * cols + 1 )
-    sns.heatmap ( affinity_mat )
-    ax.set_title ( 'ReID' )
-    ax = plt.subplot ( rows, cols, (rows - 1) * cols + 2 )
-    sns.heatmap ( geo_affinity_mat )
-    ax.set_title ( 'Geometry' )
-    ax = plt.subplot ( rows, cols, (rows - 1) * cols + 3 )
-    sns.heatmap ( W )
-    ax.set_title ( 'Synthesize' )
+
+
+
+    # ax = plt.subplot ( rows, cols, (rows - 1) * cols + 1 )
+    # sns.heatmap ( affinity_mat )
+    # ax.set_title ( 'ReID' )
+    # ax = plt.subplot ( rows, cols, (rows - 1) * cols + 2 )
+    # sns.heatmap ( geo_affinity_mat )
+    # ax.set_title ( 'Geo' )
+    # # Geometry
+    # ax = plt.subplot ( rows, cols, (rows - 1) * cols + 3 )
+    # sns.heatmap ( W )
+    # ax.set_title ( 'Syn' )
+    # # Synthesize
 
     if False and multi_pose3d:
         fig = plot_multi_pose3d ( multi_pose3d )
@@ -401,6 +410,18 @@ def show_panel_mem(dataset, matched_list, info_list, sub_imgid2cam, img_id, affi
     # plt.close()
     plt.show ()
 
+    ax = plt.subplot ( 3, 3, 1 )
+    sns.heatmap ( affinity_mat )
+    ax.set_title ( 'ReID' )
+    ax = plt.subplot ( 3, 3, 2 )
+    sns.heatmap ( geo_affinity_mat )
+    ax.set_title ( 'Geo' )
+    # Geometry
+    ax = plt.subplot ( 3, 3, 3 )
+    sns.heatmap ( W )
+    ax.set_title ( 'Syn' )
+    # Synthesize
+    plt.show()
 
 def plot_panoptic(poses, x_poses=list (), inplace=True):
     """Plot the 3D pose showing the joint connections.
@@ -567,7 +588,8 @@ def plotPaperRows(dataset, matched_list, info_list, sub_imgid2cam, img_id, affin
         show_panel_mem.counter = 0
     cols = len ( dataset.cam_names )
     rows = 3
-    all_color = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0)]
+    all_color = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),(184, 203, 115),(120, 82, 3),
+                 (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80), (214, 209, 210), (237, 202, 238), (52, 255, 255)]
     Ps = dataset.P
     reprojectedPoses = list ()
     for camId, P in enumerate ( Ps ):
@@ -613,16 +635,17 @@ def plotPaperRows(dataset, matched_list, info_list, sub_imgid2cam, img_id, affin
             cv2.imwrite ( f"cam{camIdx}Matched.png", imgMatched )
             cv2.imwrite ( f"cam{camIdx}Projected.png", imgProjected )
 
-    if multi_pose3d:
-        fig = plotPaper3d ( multi_pose3d, all_color )
-        # fig.suptitle ( f'Image: {img_id}' )
-        fig.show ()
+    # if multi_pose3d:
+    #     fig = plotPaper3d ( multi_pose3d, all_color )
+    #     # fig.suptitle ( f'Image: {img_id}' )
+    #     fig.show ()
+
     # plt.savefig ( f'./result/Shelf_panel/{plt_id}.png' )
     # plt.close()
     plt.show ()
 
 
-def plotPaper3d(poses, colors):
+def plotPaper3dold(poses):
     """Plot the 3D pose showing the joint connections.
     kp_names = ['nose', 'l_eye', 'r_eye', 'l_ear', 'r_ear', 'l_shoulder',  # 5
                 'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',  # 10
@@ -630,6 +653,11 @@ def plotPaper3d(poses, colors):
     """
     import mpl_toolkits.mplot3d.axes3d as p3
     # R = np.array ( [[1, 0, 0], [0, 0, 1], [0, -1, 0]] )
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),
+              (184, 203, 115), (120, 82, 3),
+              (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80),
+              (214, 209, 210), (237, 202, 238), (52, 255, 255)]
+
     R = np.array ( [[1, 0, 0], [0, 1, 0], [0, 0, 1]] )
     poses = [R @ i for i in poses]
     _CONNECTION = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
@@ -657,6 +685,131 @@ def plotPaper3d(poses, colors):
                       [pose[2, c[0]], pose[2, c[1]]], c=col )
         for j in range ( pose.shape[1] ):
             col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
+            ax.scatter ( pose[0, j], pose[1, j], pose[2, j],
+                         c=col, marker='o', edgecolor=col )
+        # ax.set_label ( f'#{i}' )
+    return fig
+
+
+# def plotPaper3d(poses, colors):
+def plotPaper3d(poses, personid):
+    """Plot the 3D pose showing the joint connections.
+    kp_names = ['nose', 'l_eye', 'r_eye', 'l_ear', 'r_ear', 'l_shoulder',  # 5
+                'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',  # 10
+                'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
+    """
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),(184, 203, 115),(120, 82, 3),
+                 (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80), (214, 209, 210), (237, 202, 238), (52, 255, 255)]
+
+    import mpl_toolkits.mplot3d.axes3d as p3
+    # R = np.array ( [[1, 0, 0], [0, 0, 1], [0, -1, 0]] )
+    R = np.array ( [[1, 0, 0], [0, 1, 0], [0, 0, 1]] )
+    poses = [R @ i for i in poses]
+    _CONNECTION = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
+                   [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
+
+    fig = plt.figure (figsize=(12.8, 9.6))
+    # plt.ion()
+    # plt.tight_layout()
+
+    import math
+    rows = math.ceil ( math.sqrt ( len ( poses ) ) )
+
+    # ax = fig.gca ( projection='3d' )
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+
+    smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
+    largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
+    ax.set_xlim3d ( smallest[0], largest[0] )
+    # ax.set_xlim3d(-0.6, 0.6)
+    ax.set_xlabel('X')
+    ax.set_ylim3d ( smallest[1], largest[1] )
+    # ax.set_ylim3d(-0.6, 0.6)
+    ax.set_ylabel('Y')
+    ax.set_zlim3d ( smallest[2], largest[2] )
+    # ax.set_zlim3d(-3, -1.5)
+    ax.set_zlabel('Z')
+
+    for i, pose in enumerate ( poses ):
+        assert (pose.ndim == 2)
+        assert (pose.shape[0] == 3)
+
+        m = get_key(personid , pose[0][0])
+
+        for c in _CONNECTION:
+            # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
+            col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
+            ax.plot ( [pose[0, c[0]], pose[0, c[1]]],
+                      [pose[1, c[0]], pose[1, c[1]]],
+                      [pose[2, c[0]], pose[2, c[1]]], c=col )
+        for j in range ( pose.shape[1] ):
+            # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
+            col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
+            ax.scatter ( pose[0, j], pose[1, j], pose[2, j],
+                         c=col, marker='o', edgecolor=col )
+        # ax.set_label ( f'#{i}' )
+    return fig
+
+
+def plotPaper3dour(poses, personid):
+    """Plot the 3D pose showing the joint connections.
+    kp_names = ['nose', 'l_eye', 'r_eye', 'l_ear', 'r_ear', 'l_shoulder',  # 5
+                'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',  # 10
+                'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
+    """
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),(184, 203, 115),(120, 82, 3),
+                 (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80), (214, 209, 210), (237, 202, 238), (52, 255, 255)]
+
+    import mpl_toolkits.mplot3d.axes3d as p3
+    # R = np.array ( [[1, 0, 0], [0, 0, 1], [0, -1, 0]] )
+    R = np.array ( [[1, 0, 0], [0, 1, 0], [0, 0, 1]] )
+    poses = [R @ i for i in poses]
+    _CONNECTION = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
+                   [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
+
+    fig = plt.figure (figsize=(12.8, 9.6))
+    # plt.ion()
+    # plt.tight_layout()
+
+    import math
+    rows = math.ceil ( math.sqrt ( len ( poses ) ) )
+
+    # ax = fig.gca ( projection='3d' )
+    ax = fig.add_subplot(1, 2, 2, projection='3d')
+
+    smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
+    largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
+    #ax.set_xlim3d ( smallest[0], largest[0] )
+    ax.set_xlim3d(-0.6, 0.6)
+    ax.set_xlabel('X')
+    #ax.set_ylim3d ( smallest[1], largest[1] )
+    ax.set_ylim3d(-0.6, 0.6)
+    ax.set_ylabel('Y')
+    #ax.set_zlim3d ( smallest[2], largest[2] )
+    ax.set_zlim3d(-3, -1.5)
+    ax.set_zlabel('Z')
+
+    for i, pose in enumerate ( poses ):
+        assert (pose.ndim == 2)
+        assert (pose.shape[0] == 3)
+
+        m = get_key(personid, pose[0][0])
+
+        rot = np.array([[1, 0, 0],
+                        [0, 0.92388, 0.382683],
+                        [0, -0.382683, 0.92388]])
+
+        pose = np.dot(rot, pose)
+
+        for c in _CONNECTION:
+            # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
+            col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
+            ax.plot ( [pose[0, c[0]], pose[0, c[1]]],
+                      [pose[1, c[0]], pose[1, c[1]]],
+                      [pose[2, c[0]], pose[2, c[1]]], c=col )
+        for j in range ( pose.shape[1] ):
+            # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
+            col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
             ax.scatter ( pose[0, j], pose[1, j], pose[2, j],
                          c=col, marker='o', edgecolor=col )
         # ax.set_label ( f'#{i}' )

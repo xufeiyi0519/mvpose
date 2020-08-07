@@ -16,7 +16,7 @@ from backend.tf_cpn.Detector2D import Detector2D
 class Estimator_2d ( object ):
 
     def __init__(self, DEBUGGING=False):
-        self.bbox_detector = PersonDetector ( show_image=DEBUGGING )
+        self.bbox_detector = PersonDetector ( show_image=True )
         self.pose_detector_2d = Detector2D ( show_image=DEBUGGING )
 
     def estimate_2d(self, img, img_id):
