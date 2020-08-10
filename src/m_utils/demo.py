@@ -28,13 +28,14 @@ from src.m_utils.evaluate import numpify
 from src.m_utils.mem_dataset import MemDataset
 from src.m_utils.visualize import plotPaper3d,plotPaper3dour, visualize, plotPaper3dold
 from src.tools.getkey import get_key
+from src.tools.withID_dist import withID_dist
 
 def laplace_function(x, lambda_):
     return (1/(2*lambda_)) * np.e**(-1*(np.abs(x)/lambda_))
 lam = 3
-wei1 = laplace_function(-2,lam)
+wei1 = laplace_function(0,lam)
 wei2 = laplace_function(-1,lam)
-wei3 = laplace_function(0,lam)
+wei3 = laplace_function(-2,lam)
 wei_sum = wei1 + wei2 +wei3
 weight1 = wei1/wei_sum
 weight2 = wei2/wei_sum
@@ -100,28 +101,14 @@ def export(model, loader, is_info_dicts=False, show=False):
         # print(imgs[0])
         # print("pose")
         # print(poses3d)
+        # print("111")
         pose_list.append ( poses3d )
+        # print(pose_list)
+        # print("111")
+        # print(pose_list[-1])
+        # print("1")
 
-        # laplace function
-        # if len(pose_list) >= 3:
-        #     res1 = [i * weight3 for i in pose_list[-1]]
-        #     # print("res1")
-        #     # print(res1)
-        #     res_1 = [i * weight2 for i in pose_list[-2]]
-        #     # print("res_1")
-        #     # print(res_1)
-        #     res_2 = [i * weight1 for i in pose_list[-3]]
-        #     # print("res_2")
-        #     # print(res_2)
-        #     n = len(res1)
-        #     # print(n)
-        #     pose_new = []
-        #     for i in range(n):
-        #         pose_new.append(res1[i] + res_1[i] + res_2[i])
-        #     # print("new")
-        #     # print(pose_new)
-        #     # print("1")
-        #     poses3d = pose_new
+
 
 
 
@@ -141,22 +128,75 @@ def export(model, loader, is_info_dicts=False, show=False):
             else:
                 tracking(poses3d, pose_list[change_frame], personid, img_id)
                 count = 0
+        # laplace function
+        if len(pose_list) >= 3:
+            poses3D_1 = pose_list[-1]
+            poses3D_2 = pose_list[-2]
+            poses3D_3 = pose_list[-3]
+            pose3D_1_dist = withID_dist(personid, poses3D_1)
+            # print(pose3D_1_dist)
+            pose3D_2_dist = withID_dist(personid, poses3D_2)
+            # print(pose3D_2_dist)
+            pose3D_3_dist = withID_dist(personid, poses3D_3)
+            # print(pose3D_3_dist)
+            # human_num1 = len(pose3D_1_dist)
+            # human_num2 = len(pose3D_2_dist)
+            # human_num3 = len(pose3D_3_dist)
+            # human_num = min(human_num2,human_num3)
+
+            pose_new = []
+            # t = human_num1 - human_num
+            # print(human_num1)
+            # print(human_num2)
+            # print(human_num3)
+            # print(pose3D_1_dist)
+            # if t <= 0:
+            #
+            #     for i in pose3D_1_dist.keys():
+            #         pose_mid = pose3D_1_dist[i] * weight1 + pose3D_2_dist[i] * weight2 + pose3D_3_dist[i] * weight3
+            #         pose_new.append(pose_mid)
+            #         personid[i][-1] = pose_mid[0][0]
+            # else:
+            for i in pose3D_1_dist.keys():
+                if i in pose3D_2_dist.keys() and i in pose3D_3_dist.keys():
+                    pose_mid = pose3D_1_dist[i] * weight1 + pose3D_2_dist[i] * weight2 + pose3D_3_dist[i] * weight3
+                    pose_new.append(pose_mid)
+                    personid[i][-1] = pose_mid[0][0]
+                else:
+                    pose_mid = pose3D_1_dist[i]
+                    pose_new.append(pose_mid)
+                    personid[i][-1] = pose_mid[0][0]
+
+
+            # print("new")
+            # print(pose_new)
+            # print("1")
+            poses3d = pose_new
+            pose_list.pop()
+            pose_list.append(poses3d)
+        # print("personid = ", personid)
+        # print("poses3d = ",poses3d)
         print(personid)
         # print(poses3d)
+
+
+
+
+
 #visualization
         fig_3d = plotPaper3d(poses3d, personid)
 
         # fig_3d = plotPaper3dold(poses3d)
 
-        for n, cam in enumerate (model.dataset.cam_names):
-            img = model.dataset.info_dict[cam]['image_data']
-            img_init = visualize(img, return_img=True)
-            # print(img_init)
-            fig_3d.add_subplot(len(imgs), 2, 2 * cam + 1)
-            plt.imshow(img_init)
-            plt.xlabel(f'{cam}/{len(imgs)}')
-            plt.xticks([])
-            plt.yticks([])
+        # for n, cam in enumerate (model.dataset.cam_names):
+        #     img = model.dataset.info_dict[cam]['image_data']
+        #     img_init = visualize(img, return_img=True)
+        #     # print(img_init)
+        #     fig_3d.add_subplot(len(imgs), 2, 2 * cam + 1)
+        #     plt.imshow(img_init)
+        #     plt.xlabel(f'{cam}/{len(imgs)}')
+        #     plt.xticks([])
+        #     plt.yticks([])
 
         fig_3d.show()
         k = "%03d" % img_id
@@ -167,7 +207,7 @@ def export(model, loader, is_info_dicts=False, show=False):
     fps = 10
     size = (1280, 960)
     fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-    video = cv2.VideoWriter('/home/xfy/mvpose/test.avi', fourcc, fps, size)
+    video = cv2.VideoWriter('/home/xfy/mvpose/test1.avi', fourcc, fps, size)
     img_names.sort()
 
     for i in range(0, len(img_names)):
@@ -195,7 +235,7 @@ if __name__ == '__main__':
         if dataset_name == 'Shelf':
             dataset_path = model_cfg.shelf_path
             # you can change the test_rang to visualize different images (0~3199)
-            test_range = range ( 0, 50, 1)
+            test_range = range ( 0, 100, 1)
             gt_path = dataset_path
 
         elif dataset_name == 'Campus':

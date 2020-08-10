@@ -708,26 +708,27 @@ def plotPaper3d(poses, personid):
     _CONNECTION = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
                    [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
 
-    fig = plt.figure (figsize=(12.8, 9.6))
+    fig = plt.figure ()
+    # figsize = (12.8, 9.6)
     # plt.ion()
     # plt.tight_layout()
 
     import math
     rows = math.ceil ( math.sqrt ( len ( poses ) ) )
 
-    # ax = fig.gca ( projection='3d' )
-    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    ax = fig.gca ( projection='3d' )
+    # ax = fig.add_subplot(1, 2, 2, projection='3d')
 
     smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
     largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
-    ax.set_xlim3d ( smallest[0], largest[0] )
-    # ax.set_xlim3d(-0.6, 0.6)
+    # ax.set_xlim3d ( smallest[0], largest[0] )
+    ax.set_xlim3d(-1, 2)
     ax.set_xlabel('X')
-    ax.set_ylim3d ( smallest[1], largest[1] )
-    # ax.set_ylim3d(-0.6, 0.6)
+    # ax.set_ylim3d ( smallest[1], largest[1] )
+    ax.set_ylim3d(-4, 1)
     ax.set_ylabel('Y')
-    ax.set_zlim3d ( smallest[2], largest[2] )
-    # ax.set_zlim3d(-3, -1.5)
+    # ax.set_zlim3d ( smallest[2], largest[2] )
+    ax.set_zlim3d(0, 1.5)
     ax.set_zlabel('Z')
 
     for i, pose in enumerate ( poses ):
