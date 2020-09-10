@@ -36,7 +36,7 @@ lam = 3
 wei1 = laplace_function(0,lam)
 wei2 = laplace_function(-1,lam)
 wei3 = laplace_function(-2,lam)
-wei_sum = wei1 + wei2 +wei3
+wei_sum = wei1 + wei2 + wei3
 weight1 = wei1/wei_sum
 weight2 = wei2/wei_sum
 weight3 = wei3/wei_sum
@@ -184,7 +184,7 @@ def export(model, loader, is_info_dicts=False, show=False):
 
 
 #visualization
-        fig_3d = plotPaper3d(poses3d, personid)
+        fig_3d = plotPaper3dour(poses3d, personid)
 
         # fig_3d = plotPaper3dold(poses3d)
 
@@ -235,13 +235,13 @@ if __name__ == '__main__':
         if dataset_name == 'Shelf':
             dataset_path = model_cfg.shelf_path
             # you can change the test_rang to visualize different images (0~3199)
-            test_range = range ( 0, 100, 1)
+            test_range = range ( 0, 70, 1)
             gt_path = dataset_path
 
         elif dataset_name == 'Campus':
             dataset_path = model_cfg.campus_path
             # you can change the test_rang to visualize different images (0~1999)
-            test_range = [i for i in range ( 0, 50, 1 )]
+            test_range = [i for i in range ( 105, 200, 1 )]
             gt_path = dataset_path
 
         else:

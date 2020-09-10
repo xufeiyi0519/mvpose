@@ -721,25 +721,29 @@ def plotPaper3d(poses, personid):
 
     smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
     largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
-    # ax.set_xlim3d ( smallest[0], largest[0] )
-    ax.set_xlim3d(-1, 2)
+    ax.set_xlim3d ( smallest[0], largest[0] )
+    # ax.set_xlim3d(-1, 2)
     ax.set_xlabel('X')
-    # ax.set_ylim3d ( smallest[1], largest[1] )
-    ax.set_ylim3d(-4, 1)
+    ax.set_ylim3d ( smallest[1], largest[1] )
+    # ax.set_ylim3d(-4, 1)
     ax.set_ylabel('Y')
-    # ax.set_zlim3d ( smallest[2], largest[2] )
-    ax.set_zlim3d(0, 1.5)
+    ax.set_zlim3d ( smallest[2], largest[2] )
+    # ax.set_zlim3d(0, 1.5)
     ax.set_zlabel('Z')
-
+    # print(poses)
     for i, pose in enumerate ( poses ):
         assert (pose.ndim == 2)
         assert (pose.shape[0] == 3)
-
+        # temp = pose[1]
+        # pose[1] = pose[2]
+        # pose[2] = temp
+        # print(pose)
         m = get_key(personid , pose[0][0])
-
+ 
         for c in _CONNECTION:
             # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
             col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
+            # print(pose[0, c[0]])
             ax.plot ( [pose[0, c[0]], pose[0, c[1]]],
                       [pose[1, c[0]], pose[1, c[1]]],
                       [pose[2, c[0]], pose[2, c[1]]], c=col )
@@ -758,63 +762,65 @@ def plotPaper3dour(poses, personid):
                 'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',  # 10
                 'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
     """
-    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),(184, 203, 115),(120, 82, 3),
-                 (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80), (214, 209, 210), (237, 202, 238), (52, 255, 255)]
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 255), (255, 215, 0), (0, 255, 255), (255, 255, 0),
+              (184, 203, 115), (120, 82, 3),
+              (20, 255, 255), (90, 168, 104), (26, 12, 255), (10, 255, 32), (16, 255, 255), (255, 255, 80),
+              (214, 209, 210), (237, 202, 238), (52, 255, 255)]
 
     import mpl_toolkits.mplot3d.axes3d as p3
     # R = np.array ( [[1, 0, 0], [0, 0, 1], [0, -1, 0]] )
-    R = np.array ( [[1, 0, 0], [0, 1, 0], [0, 0, 1]] )
+    R = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     poses = [R @ i for i in poses]
     _CONNECTION = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
                    [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]
 
-    fig = plt.figure (figsize=(12.8, 9.6))
+    fig = plt.figure()
+    # figsize = (12.8, 9.6)
     # plt.ion()
     # plt.tight_layout()
 
     import math
-    rows = math.ceil ( math.sqrt ( len ( poses ) ) )
+    rows = math.ceil(math.sqrt(len(poses)))
 
-    # ax = fig.gca ( projection='3d' )
-    ax = fig.add_subplot(1, 2, 2, projection='3d')
+    ax = fig.gca(projection='3d')
+    # ax = fig.add_subplot(1, 2, 2, projection='3d')
 
-    smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
-    largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
-    #ax.set_xlim3d ( smallest[0], largest[0] )
-    ax.set_xlim3d(-0.6, 0.6)
+    smallest = [min([i[idx].min() for i in poses]) for idx in range(3)]
+    largest = [max([i[idx].max() for i in poses]) for idx in range(3)]
+    # ax.set_xlim3d(smallest[0], largest[0])
+    ax.set_xlim3d(-0.5, 2)
     ax.set_xlabel('X')
-    #ax.set_ylim3d ( smallest[1], largest[1] )
-    ax.set_ylim3d(-0.6, 0.6)
+    # ax.set_ylim3d(smallest[2], largest[2])
+    ax.set_ylim3d(-3, 0.5)
     ax.set_ylabel('Y')
-    #ax.set_zlim3d ( smallest[2], largest[2] )
-    ax.set_zlim3d(-3, -1.5)
+    # ax.set_zlim3d(smallest[1], largest[1])
+    ax.set_zlim3d(-1, -0.2)
     ax.set_zlabel('Z')
-
-    for i, pose in enumerate ( poses ):
+    # print(poses)
+    for i, pose in enumerate(poses):
         assert (pose.ndim == 2)
         assert (pose.shape[0] == 3)
-
+        # temp = pose[1]
+        # pose[1] = pose[2]
+        # pose[2] = temp
+        # print(pose)
         m = get_key(personid, pose[0][0])
-
-        rot = np.array([[1, 0, 0],
-                        [0, 0.92388, 0.382683],
-                        [0, -0.382683, 0.92388]])
-
-        pose = np.dot(rot, pose)
 
         for c in _CONNECTION:
             # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
             col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
-            ax.plot ( [pose[0, c[0]], pose[0, c[1]]],
-                      [pose[1, c[0]], pose[1, c[1]]],
-                      [pose[2, c[0]], pose[2, c[1]]], c=col )
-        for j in range ( pose.shape[1] ):
+            # print(pose[0, c[0]])
+            ax.plot([pose[0, c[0]], pose[0, c[1]]],
+                    [pose[2, c[0]], pose[2, c[1]]],
+                    [pose[1, c[0]], pose[1, c[1]]], c=col)
+        for j in range(pose.shape[1]):
             # col = '#%02x%02x%02x' % (colors[i][0], colors[i][1], colors[i][2])
             col = '#%02x%02x%02x' % (colors[m][0], colors[m][1], colors[m][2])
-            ax.scatter ( pose[0, j], pose[1, j], pose[2, j],
-                         c=col, marker='o', edgecolor=col )
+            ax.scatter(pose[0, j], pose[2, j], pose[1, j],
+                       c=col, marker='o', edgecolor=col)
         # ax.set_label ( f'#{i}' )
     return fig
+
 
 
 def visualizeSkeletonPaper(img, colors, det_box_list=None, keypoints_list=None, ):
