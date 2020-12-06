@@ -29,10 +29,10 @@ from src.m_utils.visualize import show_panel_mem, plotPaperRows
 from src.m_lib import pictorial
 
 
-class MultiEstimator ( object ):
+class MultiEstimator (object):
     def __init__(self, cfg, debug=False):
-        self.est2d = Estimator_2d ( DEBUGGING=debug )
-        self.extractor = FeatureExtractor ()
+        self.est2d = Estimator_2d(DEBUGGING=debug)
+        self.extractor = FeatureExtractor()
         self.cfg = cfg
         self.dataset = None
 
@@ -93,8 +93,8 @@ class MultiEstimator ( object ):
             W = torch.tensor ( affinity_mat )
         else:
             logger.critical ( 'Get into default option, are you intend to do it?' )
-            _alpha = 0.8
-            W = 0.8 * affinity_mat + (1 - _alpha) * geo_affinity_mat
+            _alpha = 0.3
+            W = 0.3 * affinity_mat + (1 - _alpha) * geo_affinity_mat
         W[torch.isnan ( W )] = 0  # Some times (Shelf 452th img eg.) torch.sqrt will return nan if its too small
         sub_imgid2cam = np.zeros ( pose_mat.shape[0], dtype=np.int32 )
         for idx, i in enumerate ( range ( len ( dimGroup ) - 1 ) ):
@@ -113,10 +113,8 @@ class MultiEstimator ( object ):
             else:
                 X0[:, :W.shape[1]] = eig_vector.t ()
 
-
-
-        match_mat = matchSVT ( W, dimGroup, alpha=self.cfg.alpha_SVT, _lambda=self.cfg.lambda_SVT,
-                               dual_stochastic_SVT=self.cfg.dual_stochastic_SVT )
+        match_mat = matchSVT(W, dimGroup, alpha=self.cfg.alpha_SVT, _lambda=self.cfg.lambda_SVT,
+                             dual_stochastic_SVT=self.cfg.dual_stochastic_SVT)
 
 
         bin_match = match_mat[:, torch.nonzero ( torch.sum ( match_mat, dim=0 ) > 1.9 ).squeeze ()] > 0.9
@@ -204,8 +202,7 @@ class MultiEstimator ( object ):
                         reprojected_error[idx] += np.linalg.norm ( projected_pose - pose_mat[pid, joint_idx] )
                     # import IPython; IPython.embed()
                     # pose_select = reprojected_error < self.cfg.refine_threshold
-                    pose_select = (
-                                          reprojected_error - reprojected_error.mean ()) / reprojected_error.std () < self.cfg.refine_threshold
+                    pose_select = (reprojected_error - reprojected_error.mean ()) / reprojected_error.std () < self.cfg.refine_threshold
                     if pose_select.sum () >= 2:
                         Ps = list ()
                         Ys = list ()

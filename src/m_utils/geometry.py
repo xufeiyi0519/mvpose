@@ -92,6 +92,7 @@ def geometry_affinity(points_set, Fs, dimGroup):
     affinity_matrix = 1 / (1 + np.exp ( -5 * affinity_matrix ))
     return affinity_matrix
 
+
 def geometry_affinity_origin(points_set, Fs, dimGroup):
     M, _, _ = points_set.shape
     distance_matrix = np.zeros ( (M, M), dtype=np.float32 )

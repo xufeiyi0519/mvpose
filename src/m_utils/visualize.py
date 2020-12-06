@@ -406,7 +406,7 @@ def show_panel_mem(dataset, matched_list, info_list, sub_imgid2cam, img_id, affi
         fig = plot_multi_pose3d ( multi_pose3d )
         fig.suptitle ( f'Image: {img_id}' )
         fig.show ()
-    # plt.savefig ( f'./result/Shelf_panel/{plt_id}.png' )
+    plt.savefig ( f'/home/xfy/mvpose/result/woshou/{plt_id}.png' )
     # plt.close()
     plt.show ()
 
@@ -721,14 +721,14 @@ def plotPaper3d(poses, personid):
 
     smallest = [min ( [i[idx].min () for i in poses] ) for idx in range ( 3 )]
     largest = [max ( [i[idx].max () for i in poses] ) for idx in range ( 3 )]
-    ax.set_xlim3d ( smallest[0], largest[0] )
-    # ax.set_xlim3d(-1, 2)
+    # ax.set_xlim3d ( smallest[0], largest[0] )
+    ax.set_xlim3d(-1, 2)
     ax.set_xlabel('X')
-    ax.set_ylim3d ( smallest[1], largest[1] )
-    # ax.set_ylim3d(-4, 1)
+    # ax.set_ylim3d ( smallest[1], largest[1] )
+    ax.set_ylim3d(-4, 1)
     ax.set_ylabel('Y')
-    ax.set_zlim3d ( smallest[2], largest[2] )
-    # ax.set_zlim3d(0, 1.5)
+    # ax.set_zlim3d ( smallest[2], largest[2] )
+    ax.set_zlim3d(0, 1.5)
     ax.set_zlabel('Z')
     # print(poses)
     for i, pose in enumerate ( poses ):
@@ -788,13 +788,13 @@ def plotPaper3dour(poses, personid):
     smallest = [min([i[idx].min() for i in poses]) for idx in range(3)]
     largest = [max([i[idx].max() for i in poses]) for idx in range(3)]
     # ax.set_xlim3d(smallest[0], largest[0])
-    ax.set_xlim3d(-0.5, 2)
+    ax.set_xlim3d(-2, 2)
     ax.set_xlabel('X')
     # ax.set_ylim3d(smallest[2], largest[2])
-    ax.set_ylim3d(-3, 0.5)
+    ax.set_ylim3d(-5, 0)
     ax.set_ylabel('Y')
     # ax.set_zlim3d(smallest[1], largest[1])
-    ax.set_zlim3d(-1, -0.2)
+    ax.set_zlim3d(-1, 1)
     ax.set_zlabel('Z')
     # print(poses)
     for i, pose in enumerate(poses):

@@ -6,25 +6,27 @@ import sys
 import os
 
 
-class ModelConfig ( object ):
-    model_dir = os.path.abspath ( os.path.join ( os.path.dirname ( __file__ ) ) )
-    root_dir = os.path.abspath ( os.path.join ( model_dir, '..', '..' ) )
-    datasets_dir = os.path.join ( root_dir, 'datasets' )
-    shelf_path = os.path.join ( datasets_dir, 'Shelf' )
-    campus_path = os.path.join ( datasets_dir, 'CampusSeq1' )
-    ultimatum1_path = os.path.join ( datasets_dir, '160422_ultimatum1', 'vgaImgs' )
+class ModelConfig (object):
+    """
+    Initialize model configuration information.
+    """
+    model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+    root_dir = os.path.abspath(os.path.join(model_dir, '..', '..'))
+    datasets_dir = os.path.join(root_dir, 'datasets')
+    shelf_path = os.path.join(datasets_dir, 'Shelf')
+    campus_path = os.path.join(datasets_dir, 'CampusSeq1')
+    ultimatum1_path = os.path.join(datasets_dir, '160422_ultimatum1', 'vgaImgs')
 
-
-
-    shelf_range = range ( 300, 600 )
-    campus_range = [i for i in range ( 350, 471 )] + [i for i in range ( 650, 751 )]
+    shelf_range = range(300, 600)
+    campus_range = [i for i in range(350, 471)] + [i for i in range(650, 751)]
     vga_frame_rate = 25
-    ultimatum1_range = list ( range ( 17337, 17370 ) ) + list ( range ( 21560, 21660 ) )
+    ultimatum1_range = list(range(17337, 17370)) + list(range(21560, 21660))
 
     joint_num = 17
     rerank = False
     use_mincut = False
     metric = 'geometry mean'
+    # 'Geometry only' 'ReID only' 'circle''geometry mean'
     testing_on = 'Shelf'
     reprojection_refine = False
     refine_threshold = 1
@@ -48,6 +50,7 @@ class ModelConfig ( object ):
             return f'testing_on: {self.testing_on}  beta:{self.beta} metric: {self.metric}'
 
 
-model_cfg = ModelConfig ()
+model_cfg = ModelConfig()
+
 if model_cfg.root_dir not in sys.path:
-    sys.path.append ( model_cfg.root_dir )
+    sys.path.append(model_cfg.root_dir)
